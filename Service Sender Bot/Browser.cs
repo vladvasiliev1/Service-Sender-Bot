@@ -30,9 +30,9 @@ namespace Service_Sender_Bot
         {
             await Task.Run(() => 
             {
-                if (!IsWork)//
+                if (!IsWork)
                 {
-                    IsWork = true;//
+                    IsWork = true;
 
                     driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
 

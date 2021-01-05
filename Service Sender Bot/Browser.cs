@@ -32,7 +32,7 @@ namespace Service_Sender_Bot
             {
                 if (!IsWork)//
                 {
-                    IsWork = true;
+                    IsWork = true;//
 
                     driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
 

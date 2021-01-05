@@ -39,7 +39,7 @@ namespace Service_Sender_Bot
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Browser.StartWork();
+            Browser.StartWork(int.Parse(textBox1.Text), int.Parse(textBox2.Text), int.Parse(textBox3.Text));
         }
 
         private void button3_Click(object sender, EventArgs e)

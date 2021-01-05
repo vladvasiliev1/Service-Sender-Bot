@@ -39,12 +39,12 @@ namespace Service_Sender_Bot
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Browser.Work();
+            Browser.StartWork();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Browser.StopWork();
+            Browser.Stop();
         }
     }
 }

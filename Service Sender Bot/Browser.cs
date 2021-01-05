@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace Service_Sender_Bot
 {
@@ -15,7 +16,13 @@ namespace Service_Sender_Bot
 
         static List<string> tumbnails = new List<string>();
 
-        public static bool IsWork = false;
+        static Thread thread;
+
+        static int Sleep1 = 1000;
+
+        static int Sleep2 = 1000;
+
+        static int Sleep3 = 1000;
 
         public static void Start()
         {
@@ -23,88 +30,126 @@ namespace Service_Sender_Bot
 
             driver.Navigate().GoToUrl("https://www.arabiandate.com/");
 
+        }
+
+        public static void StartWork(int sleep1, int sleep2, int sleep3)
+        {
+            Sleep1 *= sleep1;
+            Sleep2 *= sleep2;
+            Sleep3 *= sleep3;
+
+            if (thread.ThreadState != ThreadState.Running)
+            {
+                thread = new Thread(new ThreadStart(Work));
+
+                thread.Start();
+            }
             
         }
 
-        public async static void Work()
+        static void Work()
         {
-            await Task.Run(() => 
+            driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
+
+            Thread.Sleep(3000); //5 min
+
+            while (true)
             {
-                if (!IsWork)
+                try
                 {
-                    IsWork = true;
+                    System.Collections.ObjectModel.ReadOnlyCollection<IWebElement> elems = driver.FindElements(
+                    By.CssSelector("a.thumbnail"));
 
-                    driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
 
-                    Thread.Sleep(3000); //5 min
 
-                    while (IsWork)
+                    foreach (IWebElement elem in elems)
                     {
                         try
                         {
-                            System.Collections.ObjectModel.ReadOnlyCollection<IWebElement> elems = driver.FindElements(
-                            By.CssSelector("a.thumbnail"));
-
-                            
-
-                            foreach (IWebElement elem in elems)
+                            Thread.Sleep(Sleep1);
+                            if (tumbnails.Contains(elem.GetAttribute("href")) == false)
                             {
+                                tumbnails.Add(elem.GetAttribute("href"));
+
+                                elem.Click();
+
                                 try
                                 {
-                                    if (tumbnails.Contains(elem.GetAttribute("href")) == false)
-                                    {
-                                        tumbnails.Add(elem.GetAttribute("href"));
+                                    Thread.Sleep(Sleep2);
+                                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
-                                        elem.Click();
+                                    driver.FindElement(By.CssSelector("form.message-form > button.chat")).Click();
 
-                                        try
-                                        {
-
-                                            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-
-                                            driver.FindElement(By.CssSelector("form.message-form > button.chat")).Click();
-
-                                            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
 
 
-                                            driver.FindElement(By.CssSelector("section.chat > div.chat > div.close")).Click(); }
-                                        catch { }
-
-                                        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5000);
-
-                                        driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
-                                    }
-                                    else
-                                    {
-                                        continue;
-                                    }
-
+                                    driver.FindElement(By.CssSelector("section.chat > div.chat > div.close")).Click();
                                 }
-                                catch (Exception ex)
-                                {
-                                    break;
-                                    Thread.Sleep(3000);
+                                catch { }
 
-                                    driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
-                                }
+                                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5000);
 
+                                Thread.Sleep(Sleep3);
+
+                                driver.FindElement(By.CssSelector("section.account-options > ul > li.mingle")).Click();
                             }
+                            else
+                            {
+                                continue;
+                            }
+
                         }
                         catch (Exception ex)
                         {
-                            System.Windows.Forms.MessageBox.Show(ex.Message);
+                            break;
+                            
                         }
+
                     }
                 }
-            });
-            
+                catch (Exception ex)
+                {
+                    System.Windows.Forms.MessageBox.Show(ex.Message);
+                }
+            }
 
         }
 
-        public static void StopWork()
+        static void Restart()
         {
-            IsWork = false;
+            Stop();
+
+            try
+            {
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(20);
+                driver.FindElement(By.CssSelector("span.close")).Click();
+            }
+            catch
+            {
+
+            }
+
+            StartWork(Sleep1,Sleep2, Sleep3);
+
+
+        }
+
+        public static void Stop()
+        {
+            if(thread.ThreadState == ThreadState.Running)
+            {
+                try
+                {
+                    thread.Abort();
+                }
+                catch (ThreadAbortException)
+                {
+
+                }
+
+                thread = null;
+            }
         }
     }
 }
